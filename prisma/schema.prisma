@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id         String      @id @default(cuid())
+  name       String
+  managers   Manager[]
+  magicLinks MagicLink[]
+  reports    Report[]
+  createdAt  DateTime    @default(now())
+}
+
+model Manager {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  company      Company  @relation(fields: [companyId], references: [id])
+  companyId    String
+  createdAt    DateTime @default(now())
+}
+
+model MagicLink {
+  id         String   @id @default(cuid())
+  token      String   @unique
+  label      String?
+  active     Boolean  @default(true)
+  company    Company  @relation(fields: [companyId], references: [id])
+  companyId  String
+  reports    Report[]
+  createdAt  DateTime @default(now())
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  company     Company  @relation(fields: [companyId], references: [id])
+  companyId   String
+  magicLink   MagicLink @relation(fields: [magicLinkId], references: [id])
+  magicLinkId String
+  content     String
+  category    String?
+  isAnonymous Boolean  @default(true)
+  contact     String?
+  status      String   @default("OPEN")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
